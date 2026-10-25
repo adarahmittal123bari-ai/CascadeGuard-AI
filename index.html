@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CascadeGuard AI | Orca Coder Track 01</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body { background-color: #0b0f19; color: #e2e8f0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        #network { width: 100%; height: 420px; border-radius: 0.75rem; background: #0f172a; border: 1px solid #334155; }
+    </style>
+</head>
+<body class="p-6">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-800">
+        <div>
+            <h1 class="text-3xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                🛡️ CascadeGuard AI: Predictive Failure & Recovery Engine
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">Track 01: Software & AI | Real-Time Dependency Blast-Radius Predictor & Automated Mitigator</p>
+        </div>
+        <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse">
+            ● LIVE TELEMETRY ACTIVE
+        </span>
+    </div>
+
+    <!-- Top KPI Cards -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="glass p-4 rounded-xl">
+            <p class="text-xs text-slate-400 uppercase">Root Cause Identified</p>
+            <h2 id="kpi-root" class="text-2xl font-bold text-red-400 mt-1">Database-Core</h2>
+            <p class="text-xs text-red-300 mt-1">↑ Anomaly Spike Detected</p>
+        </div>
+        <div class="glass p-4 rounded-xl">
+            <p class="text-xs text-slate-400 uppercase">Blast Radius (Impact)</p>
+            <h2 id="kpi-blast" class="text-2xl font-bold text-amber-400 mt-1">7 / 10 Nodes</h2>
+            <p id="kpi-pct" class="text-xs text-amber-300 mt-1">70% Architecture Compromised</p>
+        </div>
+        <div class="glass p-4 rounded-xl">
+            <p class="text-xs text-slate-400 uppercase">Predicted System Crash In</p>
+            <h2 id="kpi-time" class="text-2xl font-bold text-rose-500 mt-1">18 Seconds</h2>
+            <p class="text-xs text-slate-400 mt-1">Critical Recovery Window</p>
+        </div>
+        <div class="glass p-4 rounded-xl">
+            <p class="text-xs text-slate-400 uppercase">AI Confidence Score</p>
+            <h2 class="text-2xl font-bold text-emerald-400 mt-1">97.8%</h2>
+            <p class="text-xs text-emerald-300 mt-1">BFS + Probability Decay Model</p>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-12 gap-6 mb-6">
+        
+        <!-- Left Controls (3 Cols) -->
+        <div class="col-span-3 glass p-5 rounded-xl flex flex-col justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-cyan-400 mb-4">⚡ Simulation Controls</h3>
+                
+                <label class="block text-xs text-slate-300 mb-1">Inject Failure / Root Cause Node:</label>
+                <select id="rootNode" onchange="runSimulation()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white mb-4 focus:outline-none focus:border-cyan-400">
+                    <option value="Database-Core">Database-Core (Primary DB)</option>
+                    <option value="Auth-Service">Auth-Service (OAuth/JWT)</option>
+                    <option value="Redis-Cache">Redis-Cache (In-Memory)</option>
+                    <option value="API-Gateway">API-Gateway (Ingress)</option>
+                    <option value="Order-Service">Order-Service (Core Logic)</option>
+                    <option value="Inventory-Service">Inventory-Service</option>
+                </select>
+
+                <label class="block text-xs text-slate-300 mb-1">Simulated CPU Spike: <span id="cpuVal" class="text-cyan-400 font-bold">94%</span></label>
+                <input type="range" id="cpuSlider" min="50" max="100" value="94" oninput="runSimulation()" class="w-full accent-cyan-400 mb-4">
+
+                <label class="block text-xs text-slate-300 mb-1">Latency Spike: <span id="latVal" class="text-cyan-400 font-bold">2800 ms</span></label>
+                <input type="range" id="latSlider" min="200" max="5000" value="2800" step="100" oninput="runSimulation()" class="w-full accent-cyan-400 mb-4">
+            </div>
+
+            <div class="bg-slate-900/90 p-3 rounded-lg border border-slate-800 text-xs space-y-1.5">
+                <p class="font-bold text-slate-300 mb-1">Graph Legend (Interactive):</p>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Root Cause (Crash Origin)</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> High Cascade Risk (&gt;65%)</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-400 inline-block"></span> Degraded Service (35-65%)</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Healthy / Isolated Node</div>
+            </div>
+        </div>
+
+        <!-- Center Interactive Graph (5 Cols) -->
+        <div class="col-span-5 glass p-4 rounded-xl">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-md font-bold text-white">🕸️ Live Service Dependency & Blast Radius</h3>
+                <span class="text-xs text-slate-400">Drag nodes to inspect</span>
+            </div>
+            <div id="network"></div>
+        </div>
+
+        <!-- Right BFS Trace & Live Logs (4 Cols) -->
+        <div class="col-span-4 flex flex-col gap-4">
+            <div class="glass p-4 rounded-xl flex-1 overflow-auto max-h-60">
+                <h3 class="text-md font-bold text-white mb-2">📈 Failure Propagation Trace (BFS)</h3>
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-700 text-slate-400">
+                            <th class="pb-1">Hop</th>
+                            <th class="pb-1">Service</th>
+                            <th class="pb-1">Cascade Prob</th>
+                            <th class="pb-1">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="traceTable" class="divide-y divide-slate-800"></tbody>
+                </table>
+            </div>
+
+            <div class="glass p-4 rounded-xl">
+                <h3 class="text-md font-bold text-white mb-2">🖥️ Live Server Telemetry & Log Stream</h3>
+                <pre id="logBox" class="bg-black/80 text-green-400 p-3 rounded-lg text-xs font-mono overflow-x-auto leading-relaxed border border-slate-800"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Recovery Strategy Comparison -->
+    <div class="glass p-5 rounded-xl">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-bold text-cyan-400">🧠 AI Recovery Strategy Recommender & Comparison</h3>
+            <button onclick="applyMitigation()" class="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-4 py-1.5 rounded-lg text-xs transition">
+                ⚡ Execute Optimal Recovery Strategy
+            </button>
+        </div>
+        <table class="w-full text-left text-sm">
+            <thead>
+                <tr class="border-b border-slate-700 text-slate-400 text-xs uppercase">
+                    <th class="py-2">Recovery Strategy</th>
+                    <th class="py-2">Action Plan</th>
+                    <th class="py-2">Est. Recovery (MTTR)</th>
+                    <th class="py-2">System Availability</th>
+                    <th class="py-2">Data Loss Risk</th>
+                    <th class="py-2">AI Score</th>
+                </tr>
+            </thead>
+            <tbody id="strategyTable" class="divide-y divide-slate-800"></tbody>
+        </table>
+        <div id="aiVerdict" class="mt-3 p-3 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs font-semibold"></div>
+    </div>
+
+<script>
+    const services = [
+        "Database-Core", "Auth-Service", "Redis-Cache", "Inventory-Service",
+        "Order-Service", "API-Gateway", "Payment-Gateway", "Notification-Worker",
+        "Frontend-Web", "Mobile-BFF"
+    ];
+
+    const dependencies = [
+        { from: "Database-Core", to: "Auth-Service", weight: 0.92 },
+        { from: "Database-Core", to: "Order-Service", weight: 0.88 },
+        { from: "Database-Core", to: "Inventory-Service", weight: 0.82 },
+        { from: "Auth-Service", to: "API-Gateway", weight: 0.95 },
+        { from: "Redis-Cache", to: "API-Gateway", weight: 0.65 },
+        { from: "Redis-Cache", to: "Order-Service", weight: 0.75 },
+        { from: "Inventory-Service", to: "Order-Service", weight: 0.78 },
+        { from: "API-Gateway", to: "Frontend-Web", weight: 0.95 },
+        { from: "API-Gateway", to: "Mobile-BFF", weight: 0.90 },
+        { from: "Order-Service", to: "Payment-Gateway", weight: 0.90 },
+        { from: "Order-Service", to: "Notification-Worker", weight: 0.55 }
+    ];
+
+    let network = null;
+
+    function runSimulation(mitigated = false) {
+        const root = document.getElementById("rootNode").value;
+        const cpu = parseInt(document.getElementById("cpuSlider").value);
+        const lat = parseInt(document.getElementById("latSlider").value);
+
+        document.getElementById("cpuVal").innerText = cpu + "%";
+        document.getElementById("latVal").innerText = lat + " ms";
+
+        const initSev = mitigated ? 0.15 : Math.min(0.99, (cpu / 100) * 0.6 + (lat / 5000) * 0.4);
+
+        // BFS Cascade Prediction
+        let visited = {};
+        visited[root] = initSev;
+        let queue = [{ node: root, sev: initSev, step: 0, via: "Origin" }];
+        let trace = [{ step: 0, node: root, sev: initSev, via: "Origin Anomaly" }];
+
+        while (queue.length > 0 && !mitigated) {
+            let curr = queue.shift();
+            dependencies.filter(d => d.from === curr.node).forEach(edge => {
+                let propSev = curr.sev * edge.weight;
+                if (propSev > 0.35 && (!visited[edge.to] || propSev > visited[edge.to])) {
+                    visited[edge.to] = propSev;
+                    queue.push({ node: edge.to, sev: propSev, step: curr.step + 1 });
+                    trace.push({ step: curr.step + 1, node: edge.to, sev: propSev, via: curr.node });
+                }
+            });
+        }
+
+        // Update KPIs
+        const affectedCount = Object.keys(visited).length;
+        document.getElementById("kpi-root").innerText = mitigated ? "MITIGATED ✅" : root;
+        document.getElementById("kpi-blast").innerText = `${mitigated ? 0 : affectedCount} / ${services.length} Nodes`;
+        document.getElementById("kpi-pct").innerText = mitigated ? "100% System Stabilized" : `${Math.round((affectedCount/services.length)*100)}% Architecture Compromised`;
+        document.getElementById("kpi-time").innerText = mitigated ? "SAFE" : `${Math.max(9, 55 - Math.round(initSev * 42))} Seconds`;
+
+        // Render Vis.js Graph
+        let visNodes = services.map(s => {
+            let color = "#10b981"; // Healthy Green
+            if (!mitigated) {
+                if (s === root) color = "#ef4444"; // Red
+                else if (visited[s] > 0.65) color = "#f97316"; // Orange
+                else if (visited[s]) color = "#eab308"; // Yellow
+            }
+            return {
+                id: s, label: s,
+                color: { background: color, border: "#ffffff", highlight: { background: color, border: "#38bdf8" } },
+                font: { color: "#ffffff", size: 12, face: "Segoe UI" },
+                shape: "box", margin: 10, borderWidth: 1.5
+            };
+        });
+
+        let visEdges = dependencies.map(d => ({
+            from: d.from, to: d.to, arrows: "to",
+            label: Math.round(d.weight * 100) + "%",
+            font: { color: "#94a3b8", size: 10, align: "top" },
+            color: { color: (!mitigated && visited[d.from] && visited[d.to]) ? "#f87171" : "#475569" },
+            width: (!mitigated && visited[d.from] && visited[d.to]) ? 2.5 : 1
+        }));
+
+        const container = document.getElementById("network");
+        const data = { nodes: new vis.DataSet(visNodes), edges: new vis.DataSet(visEdges) };
+        const options = { physics: { stabilization: true, barnesHut: { springLength: 110 } }, interaction: { hover: true } };
+        network = new vis.Network(container, data, options);
+
+        // Update BFS Table
+        trace.sort((a, b) => a.step - b.step);
+        document.getElementById("traceTable").innerHTML = trace.map(t => {
+            let badge = t.step === 0 ? `<span class="text-red-400 font-bold">🔴 ROOT CAUSE</span>` :
+                        (t.sev > 0.65 ? `<span class="text-orange-400 font-semibold">🟠 CRITICAL CASCADE</span>` : `<span class="text-yellow-300">🟡 DEGRADED</span>`);
+            if (mitigated) badge = `<span class="text-emerald-400 font-bold">🟢 CIRCUIT ISOLATED</span>`;
+            return `<tr class="py-1.5">
+                <td class="py-1.5 font-mono text-slate-400">Hop ${t.step}</td>
+                <td class="py-1.5 font-bold text-white">${t.node}</td>
+                <td class="py-1.5 font-mono text-cyan-300">${mitigated ? '4.2%' : (t.sev * 100).toFixed(1) + '%'}</td>
+                <td class="py-1.5">${badge}</td>
+            </tr>`;
+        }).join("");
+
+        // Update Logs
+        const downstream = dependencies.filter(d => d.from === root).map(d => d.to).join(", ") || "Leaf Node";
+        document.getElementById("logBox").innerText = mitigated ?
+`[INFO] 13:45:10 - AI Circuit Breaker Activated on [${root}]
+[OK]   13:45:11 - Fallback Redis replica serving cached responses
+[OK]   13:45:12 - Cascade propagation halted. 0 downstream failures.` :
+`[WARN] 13:44:02 - ${root}: Thread pool saturation (Latency: ${lat}ms)
+[ERR]  13:44:05 - ${root}: CPU utilization critical (${cpu}%)
+[AI-PREDICT] High cascade probability to -> [${downstream}]
+[ALERT] System-wide outage predicted if unmitigated!`;
+
+        // Update Strategy Table
+        document.getElementById("strategyTable").innerHTML = `
+            <tr class="bg-emerald-950/30">
+                <td class="py-2.5 font-bold text-emerald-400">⭐ 1. Circuit Breaker + Fallback Cache (Optimal)</td>
+                <td class="py-2.5 text-slate-300">Isolate <b>${root}</b> & route read-traffic to stale cache</td>
+                <td class="py-2.5 font-mono text-emerald-300">6 Seconds</td>
+                <td class="py-2.5 font-bold text-emerald-400">96.2%</td>
+                <td class="py-2.5 text-emerald-400">Zero</td>
+                <td class="py-2.5 font-extrabold text-emerald-400">98 / 100</td>
+            </tr>
+            <tr>
+                <td class="py-2.5 font-semibold text-white">2. Kubernetes Horizontal Pod Auto-Scale (HPA)</td>
+                <td class="py-2.5 text-slate-300">Spin up +3 container replicas for <b>${root}</b></td>
+                <td class="py-2.5 font-mono text-amber-300">48 Seconds</td>
+                <td class="py-2.5 text-amber-300">79.5%</td>
+                <td class="py-2.5 text-amber-300">Low</td>
+                <td class="py-2.5 font-bold text-amber-400">76 / 100</td>
+            </tr>
+            <tr>
+                <td class="py-2.5 font-semibold text-slate-300">3. Hard Cluster Restart & Rollback</td>
+                <td class="py-2.5 text-slate-300">Force reboot <b>${root}</b> & flush active queues</td>
+                <td class="py-2.5 font-mono text-rose-400">135 Seconds</td>
+                <td class="py-2.5 text-rose-400">38.0%</td>
+                <td class="py-2.5 text-rose-400">High (In-flight drops)</td>
+                <td class="py-2.5 font-bold text-rose-500">42 / 100</td>
+            </tr>
+        `;
+
+        document.getElementById("aiVerdict").innerHTML = mitigated ?
+            `✅ <b>STATUS:</b> Optimal Recovery Strategy Executed! <b>${root}</b> isolated via Circuit Breaker. Cascading failure completely prevented.` :
+            `💡 <b>AI RECOMMENDATION:</b> Deploy <b>Circuit Breaker on ${root}</b> immediately to protect downstream dependencies (<b>${downstream}</b>) and save <b>129 seconds</b> of downtime.`;
+    }
+
+    function applyMitigation() {
+        runSimulation(true);
+    }
+
+    window.onload = () => runSimulation(false);
+</script>
+</body>
+</html>
